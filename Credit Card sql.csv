@@ -1,0 +1,83 @@
+-- Created a Database to store my cleaned credit card applicants' data.
+CREATE DATABASE Credit_Card;
+
+SELECT *
+FROM credit_card.data_clean;
+
+-- 1) Group the customers based on their income type and find the average of their annual income.
+
+-- To find out how many types of incomers are there:
+select Distinct(Type_income)
+from credit_card.data_clean;
+
+SELECT 
+	ROUND(AVG(CASE when Type_income = 'Pensioner' THEN Annual_income ELSE 0 END)) as Avg_Pensioner_Inc,
+	ROUND(AVG(CASE when Type_income = 'Commercial associate' THEN Annual_income ELSE 0 END)) as Avg_Associate_Inc,
+    ROUND(AVG(CASE when Type_income = 'Working' THEN Annual_income ELSE 0 END)) as Avg_Worker_Inc,
+    ROUND(AVG(CASE when Type_income = 'State servant' THEN Annual_income ELSE 0 END)) as Avg_Stateservant_Inc
+FROM credit_card.data_clean;
+
+-- Average a Worker earns is $93055 annualy while a Commercial Associate earns $55197 and Pensioner earns $26872. 
+-- The lowest earner out of the bunch are State servants who earns $15681.
+
+-- 2) Find the female owners of cars and property.
+
+-- To find out the total number of women out of 1541 applicants.
+select Ind_id
+from credit_card.data_clean
+where GENDER='F';
+
+SELECT Ind_ID, Car_Owner, Propert_Owner, GENDER
+FROM credit_card.data_clean
+WHERE Car_Owner = 'Y' AND Propert_Owner = 'Y' AND GENDER = 'F';
+
+-- There are 177 women who own a car and property out of 973 women applicants.
+
+-- 3)Find the male customers who are staying with their families.
+
+SELECT DISTINCT(Ind_ID),Housing_type, Family_Members
+FROM credit_card.data_clean
+WHERE GENDER = 'M' AND Family_Members >= 1;
+
+SELECT DISTINCT(Ind_ID),Housing_type, Family_Members,CHILDREN
+FROM credit_card.data_clean
+WHERE GENDER = 'M' AND Family_Members >= 1 AND CHILDREN >= 1;
+
+-- Out of 568 male customers, all of them live with alteast one family member.
+-- And out of these customers, 191 of them have alteast 1 child.
+
+-- 4)Please list the top five people having the highest income.
+SELECT Ind_ID, Annual_income
+FROM credit_card.data_clean
+ORDER BY Annual_income desc
+LIMIT 5;
+
+-- The applicants whose IDs' are 5143235, 5143231, 5079016, 5079017, 5090470 are the highest paid in the dataset.
+
+-- 5)How many married people are having bad credit?
+
+-- Since the output/label is based on the applicant's application data and credit score, 
+-- I think we can assume that the result of their credit worthiness could possibly reflect their credit score.(Output=1 says their application has been rejected)
+
+SELECT COUNT(DISTINCT(Ind_ID)), Output, Marital_status
+FROM credit_card.data_clean
+WHERE Marital_status = 'Married' AND Output = 1;
+ -- From the data we can positevely assume that there are 110 married applicants who have bad credit.
+ 
+ -- 6)What is the highest education level and what is the total count?
+ 
+ SELECT DISTINCT(EDUCATION), COUNT(EDUCATION)
+ FROM credit_card.data_clean
+ GROUP BY EDUCATION;
+ -- The highest level of education according to the dataset is 'Academic degree' and only 2 applicants have a degree.
+ 
+ -- 7)Between married males and females, who is having more bad credit? 
+ 
+SELECT GENDER, SUM(CASE WHEN Output = '1'THEN 1 ELSE 0 END) AS bad_credit_count
+FROM credit_card.data_clean
+WHERE marital_status = 'Married'
+GROUP BY GENDER;
+
+-- According to the data, out of all married applicants, there are 59 female applicants who have bad credit score while only 51 in male applicants.
+
+
